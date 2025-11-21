@@ -236,12 +236,6 @@ export const QuizGame = () => {
               </p>
             </div>
             
-            <div className="text-center mb-6">
-              <p className="text-xl font-bold text-kbc-gold-light">
-                Team {currentTeam} - Answer to earn {currentTimeLeft * 100} points!
-              </p>
-            </div>
-
             {/* Options */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               {currentQuestion.options.map((option) => {
