@@ -37,6 +37,16 @@ All colors MUST be HSL.
     --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
+    
+    /* KBC Theme Colors */
+    --kbc-purple-dark: 280 60% 20%;
+    --kbc-purple: 280 50% 30%;
+    --kbc-purple-light: 280 45% 40%;
+    --kbc-gold: 45 100% 50%;
+    --kbc-gold-light: 45 100% 60%;
+    --kbc-correct: 120 60% 50%;
+    --kbc-wrong: 45 100% 60%;
+    --kbc-option-border: 45 100% 50%;
 
     --sidebar-background: 0 0% 98%;
 
