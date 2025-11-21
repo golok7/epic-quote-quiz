@@ -57,6 +57,16 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        kbc: {
+          "purple-dark": "hsl(var(--kbc-purple-dark))",
+          purple: "hsl(var(--kbc-purple))",
+          "purple-light": "hsl(var(--kbc-purple-light))",
+          gold: "hsl(var(--kbc-gold))",
+          "gold-light": "hsl(var(--kbc-gold-light))",
+          correct: "hsl(var(--kbc-correct))",
+          wrong: "hsl(var(--kbc-wrong))",
+          "option-border": "hsl(var(--kbc-option-border))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
