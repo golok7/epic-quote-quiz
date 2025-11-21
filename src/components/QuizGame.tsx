@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { questions } from "@/data/questions";
 import { Timer } from "./Timer";
-import { PrizeLadder } from "./PrizeLadder";
+import { TeamScoreboard } from "./TeamScoreboard";
 import { Button } from "./ui/button";
-import { Lightbulb, Users } from "lucide-react";
+import { Lightbulb, Users, Trophy } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export const QuizGame = () => {
@@ -15,9 +15,11 @@ export const QuizGame = () => {
   const [askExpertUsed, setAskExpertUsed] = useState(false);
   const [removedOptions, setRemovedOptions] = useState<string[]>([]);
   const [gameOver, setGameOver] = useState(false);
-  const [won, setWon] = useState(false);
+  const [teamAScore, setTeamAScore] = useState(0);
+  const [teamBScore, setTeamBScore] = useState(0);
 
   const currentQuestion = questions[currentQuestionIndex];
+  const currentTeam = currentQuestionIndex % 2 === 0 ? "A" : "B";
 
   useEffect(() => {
     setTimerActive(true);
@@ -34,41 +36,79 @@ export const QuizGame = () => {
     setTimerActive(false);
 
     const isCorrect = optionLabel === currentQuestion.correctAnswer;
+    const points = currentQuestionIndex + 1; // Points based on question difficulty
 
     setTimeout(() => {
       if (isCorrect) {
-        if (currentQuestionIndex === questions.length - 1) {
-          setWon(true);
-          setGameOver(true);
+        // Award points to the current team
+        if (currentTeam === "A") {
+          setTeamAScore((prev) => prev + points);
           toast({
-            title: "🎉 Congratulations!",
-            description: "You won ₹5 Crore!",
+            title: "✓ Correct!",
+            description: `Team A earned ${points} points!`,
           });
         } else {
-          setCurrentQuestionIndex((prev) => prev + 1);
+          setTeamBScore((prev) => prev + points);
+          toast({
+            title: "✓ Correct!",
+            description: `Team B earned ${points} points!`,
+          });
         }
       } else {
-        setGameOver(true);
         toast({
-          title: "Game Over",
-          description: `Wrong answer! You won ${
-            currentQuestionIndex > 0 ? questions[currentQuestionIndex - 1].prize : "₹0"
-          }`,
+          title: "✗ Wrong Answer",
+          description: `Team ${currentTeam} didn't score this round.`,
           variant: "destructive",
         });
+      }
+
+      // Move to next question or end game
+      if (currentQuestionIndex === questions.length - 1) {
+        setTimeout(() => {
+          endQuiz();
+        }, 1000);
+      } else {
+        setTimeout(() => {
+          setCurrentQuestionIndex((prev) => prev + 1);
+        }, 1000);
       }
     }, 2000);
   };
 
   const handleTimeUp = () => {
-    setGameOver(true);
     toast({
-      title: "Time's Up!",
-      description: `You won ${
-        currentQuestionIndex > 0 ? questions[currentQuestionIndex - 1].prize : "₹0"
-      }`,
+      title: "⏰ Time's Up!",
+      description: `Team ${currentTeam} didn't answer in time.`,
       variant: "destructive",
     });
+    
+    setIsAnswered(true);
+    setTimerActive(false);
+    
+    setTimeout(() => {
+      if (currentQuestionIndex === questions.length - 1) {
+        endQuiz();
+      } else {
+        setCurrentQuestionIndex((prev) => prev + 1);
+      }
+    }, 2000);
+  };
+
+  const endQuiz = () => {
+    setGameOver(true);
+    const winner = teamAScore > teamBScore ? "A" : teamBScore > teamAScore ? "B" : "TIE";
+    
+    if (winner === "TIE") {
+      toast({
+        title: "🤝 It's a Tie!",
+        description: `Both teams scored ${teamAScore} points!`,
+      });
+    } else {
+      toast({
+        title: `🎉 Team ${winner} Wins!`,
+        description: `Team A: ${teamAScore} pts | Team B: ${teamBScore} pts`,
+      });
+    }
   };
 
   const handleFiftyFifty = () => {
@@ -112,23 +152,35 @@ export const QuizGame = () => {
     setAskExpertUsed(false);
     setRemovedOptions([]);
     setGameOver(false);
-    setWon(false);
+    setTeamAScore(0);
+    setTeamBScore(0);
   };
 
   if (gameOver) {
+    const winner = teamAScore > teamBScore ? "A" : teamBScore > teamAScore ? "B" : "TIE";
+    
     return (
       <div className="min-h-screen bg-gradient-to-b from-kbc-purple-dark via-kbc-purple to-kbc-purple-light flex items-center justify-center">
-        <div className="text-center space-y-6">
+        <div className="text-center space-y-8">
+          <Trophy className="w-32 h-32 mx-auto text-kbc-gold" />
           <h1 className="text-6xl font-bold text-kbc-gold">
-            {won ? "🎉 WINNER! 🎉" : "Game Over"}
+            {winner === "TIE" ? "🤝 It's a Tie!" : `🎉 Team ${winner} Wins! 🎉`}
           </h1>
-          <p className="text-3xl text-white">
-            {won
-              ? "You won ₹5 Crore!"
-              : `You won ${
-                  currentQuestionIndex > 0 ? questions[currentQuestionIndex - 1].prize : "₹0"
-                }`}
-          </p>
+          
+          <div className="flex justify-center gap-8">
+            <div className="bg-kbc-purple-dark/80 border-4 border-kbc-gold rounded-lg p-8">
+              <h3 className="text-2xl font-bold text-kbc-gold mb-2">Team A</h3>
+              <p className="text-5xl font-bold text-white">{teamAScore}</p>
+              <p className="text-lg text-kbc-gold-light mt-2">points</p>
+            </div>
+            
+            <div className="bg-kbc-purple-dark/80 border-4 border-kbc-gold rounded-lg p-8">
+              <h3 className="text-2xl font-bold text-kbc-gold mb-2">Team B</h3>
+              <p className="text-5xl font-bold text-white">{teamBScore}</p>
+              <p className="text-lg text-kbc-gold-light mt-2">points</p>
+            </div>
+          </div>
+          
           <Button
             onClick={resetGame}
             className="bg-kbc-gold hover:bg-kbc-gold-light text-black font-bold text-xl px-8 py-6"
@@ -149,9 +201,12 @@ export const QuizGame = () => {
           <div className="text-center mb-8">
             <div className="w-48 h-48 mx-auto mb-4 rounded-full border-8 border-kbc-gold bg-kbc-purple-dark flex items-center justify-center">
               <div className="text-center">
-                <p className="text-sm text-kbc-gold">KAUN BANEGA</p>
-                <p className="text-3xl font-bold text-kbc-gold">CROREPATI</p>
+                <p className="text-4xl font-bold text-kbc-gold">The Epic</p>
+                <p className="text-3xl font-bold text-kbc-gold">Challenge</p>
               </div>
+            </div>
+            <div className="mt-4 text-2xl font-bold text-kbc-gold">
+              Team {currentTeam}'s Turn
             </div>
           </div>
 
@@ -201,7 +256,7 @@ export const QuizGame = () => {
               })}
             </div>
 
-            {/* Lifelines */}
+            {/* Lifelines and Controls */}
             <div className="flex justify-center gap-4">
               <Button
                 onClick={handleFiftyFifty}
@@ -219,15 +274,27 @@ export const QuizGame = () => {
                 <Users className="mr-2" />
                 Ask Expert
               </Button>
+              <Button
+                onClick={endQuiz}
+                variant="destructive"
+                className="font-bold"
+              >
+                <Trophy className="mr-2" />
+                End Quiz
+              </Button>
             </div>
           </div>
 
           <div className="h-8" />
         </div>
 
-        {/* Prize Ladder */}
+        {/* Team Scoreboard */}
         <div className="bg-kbc-purple-dark/80 border-l-4 border-kbc-gold overflow-y-auto">
-          <PrizeLadder currentQuestion={currentQuestionIndex + 1} />
+          <TeamScoreboard 
+            teamAScore={teamAScore} 
+            teamBScore={teamBScore} 
+            currentTeam={currentTeam}
+          />
         </div>
       </div>
     </div>
