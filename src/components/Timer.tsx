@@ -3,9 +3,10 @@ import { useEffect, useState } from "react";
 interface TimerProps {
   onTimeUp: () => void;
   isActive: boolean;
+  onTick?: (seconds: number) => void;
 }
 
-export const Timer = ({ onTimeUp, isActive }: TimerProps) => {
+export const Timer = ({ onTimeUp, isActive, onTick }: TimerProps) => {
   const [seconds, setSeconds] = useState(30);
 
   useEffect(() => {
@@ -20,11 +21,17 @@ export const Timer = ({ onTimeUp, isActive }: TimerProps) => {
     }
 
     const interval = setInterval(() => {
-      setSeconds((prev) => prev - 1);
+      setSeconds((prev) => {
+        const newValue = prev - 1;
+        if (onTick) {
+          onTick(newValue);
+        }
+        return newValue;
+      });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [seconds, onTimeUp, isActive]);
+  }, [seconds, onTimeUp, isActive, onTick]);
 
   return (
     <div className="flex items-center justify-center">

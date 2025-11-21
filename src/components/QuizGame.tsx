@@ -17,6 +17,7 @@ export const QuizGame = () => {
   const [gameOver, setGameOver] = useState(false);
   const [teamAScore, setTeamAScore] = useState(0);
   const [teamBScore, setTeamBScore] = useState(0);
+  const [currentTimeLeft, setCurrentTimeLeft] = useState(30);
 
   const currentQuestion = questions[currentQuestionIndex];
   const currentTeam = currentQuestionIndex % 2 === 0 ? "A" : "B";
@@ -26,7 +27,12 @@ export const QuizGame = () => {
     setIsAnswered(false);
     setSelectedAnswer(null);
     setRemovedOptions([]);
+    setCurrentTimeLeft(30);
   }, [currentQuestionIndex]);
+
+  const handleTimerTick = (seconds: number) => {
+    setCurrentTimeLeft(seconds);
+  };
 
   const handleAnswer = (optionLabel: string) => {
     if (isAnswered) return;
@@ -36,22 +42,31 @@ export const QuizGame = () => {
     setTimerActive(false);
 
     const isCorrect = optionLabel === currentQuestion.correctAnswer;
-    const points = currentQuestionIndex + 1; // Points based on question difficulty
+    // Points calculation: timeLeft * 100
+    const points = currentTimeLeft * 100;
 
     setTimeout(() => {
       if (isCorrect) {
         // Award points to the current team
         if (currentTeam === "A") {
-          setTeamAScore((prev) => prev + points);
+          setTeamAScore((prev) => {
+            const newScore = prev + points;
+            console.log(`Team A Score Update: ${prev} + ${points} = ${newScore}`);
+            return newScore;
+          });
           toast({
             title: "✓ Correct!",
-            description: `Team A earned ${points} points!`,
+            description: `Team A earned ${points} points! (${currentTimeLeft}s left)`,
           });
         } else {
-          setTeamBScore((prev) => prev + points);
+          setTeamBScore((prev) => {
+            const newScore = prev + points;
+            console.log(`Team B Score Update: ${prev} + ${points} = ${newScore}`);
+            return newScore;
+          });
           toast({
             title: "✓ Correct!",
-            description: `Team B earned ${points} points!`,
+            description: `Team B earned ${points} points! (${currentTimeLeft}s left)`,
           });
         }
       } else {
@@ -211,13 +226,19 @@ export const QuizGame = () => {
           </div>
 
           {/* Timer */}
-          <Timer onTimeUp={handleTimeUp} isActive={timerActive} />
+          <Timer onTimeUp={handleTimeUp} isActive={timerActive} onTick={handleTimerTick} />
 
           {/* Question */}
           <div className="w-full max-w-4xl">
-            <div className="bg-kbc-purple-light/50 border-4 border-kbc-gold rounded-lg p-6 mb-8">
+            <div className="bg-kbc-purple-light/50 border-4 border-kbc-gold rounded-lg p-6 mb-4">
               <p className="text-2xl text-center text-kbc-gold font-semibold">
                 {currentQuestion.question}
+              </p>
+            </div>
+            
+            <div className="text-center mb-6">
+              <p className="text-xl font-bold text-kbc-gold-light">
+                Team {currentTeam} - Answer to earn {currentTimeLeft * 100} points!
               </p>
             </div>
 
